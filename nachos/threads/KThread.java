@@ -427,8 +427,14 @@ public class KThread {
 			@Override
 			public void run()
 			{
-				for (int a=0;a<10000;a++)
-					if (a%1000==0) System.out.println("1");
+				System.out.println(Machine.timer().getTime());
+				ThreadedKernel.alarm.waitUntil(100);
+				System.out.println(Machine.timer().getTime());
+				for (int a=0;a<500;a++)
+				{
+					if (a%100==0) System.out.println("1:"+a);
+					currentThread.yield();
+				}
 			}
 		});
 
@@ -436,8 +442,14 @@ public class KThread {
 			@Override
 			public void run()
 			{
+				System.out.println(Machine.timer().getTime());
+				ThreadedKernel.alarm.waitUntil(50);
+				System.out.println(Machine.timer().getTime());
 				for (int a=0;a<10;a++)
-					System.out.println("2");
+				{
+					System.out.println("2:"+a);
+					currentThread.yield();
+				}
 				t1.join();
 				System.out.println("Join t1 done");
 			}
