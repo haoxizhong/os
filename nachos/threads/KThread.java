@@ -417,12 +417,22 @@ public class KThread {
 	/**
 	 * Tests whether this module is working.
 	 */
-	public static void selfTest() {
-		/*Lib.debug(dbgThread, "Enter KThread.selfTest");
+
+	private static void originalTest()
+	{
+		Lib.debug(dbgThread, "Enter KThread.selfTest");
+
+		System.out.println("Origin test");
 
 		new KThread(new PingTest(1)).setName("forked thread").fork();
-		new PingTest(0).run();*/
+		new PingTest(0).run();
 		
+		System.out.println("");
+	}
+
+	private static void zhxTestJoinAndAlarm()
+	{
+		System.out.println("Zhx test join and alarm");
 		KThread t1 = new KThread(new Runnable () {
 			@Override
 			public void run()
@@ -459,6 +469,86 @@ public class KThread {
 		t1.fork();
 		t1.join();
 		t2.join();
+		
+		System.out.println("");
+	}
+
+	private static void zhxTestCommunication ()
+	{
+		System.out.println("Zhx test communication");
+		Communicator c = new Communicator();
+		int t = 5;
+
+		KThread t1 = new KThread(new Runnable () {
+			@Override
+			public void run()
+			{
+				for (int a=0;a<t;a++)
+				{
+					System.out.println("1 speaks "+a);
+					c.speak(t+a);
+					currentThread.yield();
+				}
+			}
+		});
+
+		KThread t2 = new KThread (new Runnable () {
+			@Override
+			public void run()
+			{
+				for (int a=0;a<t;a++)
+				{
+					System.out.println("2 speaks "+a);
+					c.speak(2*t+a);
+					currentThread.yield();
+				}
+			}
+		});
+
+		KThread t3 = new KThread (new Runnable () {
+			@Override
+			public void run()
+			{
+				for (int a=0;a<t;a++)
+				{
+					int res = c.listen();
+					System.out.println("3 receives " + res%t + " from " + res/t);
+					currentThread.yield();
+				}
+			}
+		});
+
+		KThread t4 = new KThread (new Runnable () {
+			@Override
+			public void run()
+			{
+				for (int a=0;a<t;a++)
+				{
+					int res = c.listen();
+					System.out.println("4 receives " + res%t + " from " + res/t);
+					currentThread.yield();
+				}
+			}
+		});
+
+		t4.fork();
+		t1.fork();
+		t2.fork();
+		t3.fork();
+		t1.join();
+		t2.join();
+		t3.join();
+		t4.join();
+		
+		System.out.println("");
+	}
+
+	public static void selfTest() {
+		originalTest();
+
+		zhxTestJoinAndAlarm();
+
+		zhxTestCommunication();
 	}
 
 	private static final char dbgThread = 't';
