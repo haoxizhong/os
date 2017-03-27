@@ -543,12 +543,19 @@ public class KThread {
 		System.out.println("");
 	}
 
+	public static void BoatTest()
+	{
+		Boat.selfTest();
+	}
+
 	public static void selfTest() {
 		originalTest();
 
 		zhxTestJoinAndAlarm();
 
 		zhxTestCommunication();
+		
+		BoatTest();
 	}
 
 	private static final char dbgThread = 't';
