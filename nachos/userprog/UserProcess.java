@@ -345,6 +345,33 @@ public class UserProcess {
 	Lib.assertNotReached("Machine.halt() did not halt machine!");
 	return 0;
     }
+	
+	private int handleExit() {
+	}
+
+	private int handleExec() {
+	}
+
+	private int handleJoin() {
+	}
+
+	private int handleCreate() {
+	}
+
+	private int handleOpen() {
+	}
+
+	private int handleRead() {
+	}
+
+	private int handleWrite() {
+	}
+
+	private int handleClose() {
+	}
+
+	private int handleUnlink() {
+	}
 
 
     private static final int

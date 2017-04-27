@@ -1,3 +1,4 @@
 *.swp
 nachos/proj*/nachos
+*~
 nachos/.idea
