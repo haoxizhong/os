@@ -1,3 +1,5 @@
+//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
+//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -12,7 +14,7 @@ public class ElevatorController implements ElevatorControllerInterface {
      */
     public ElevatorController() {
     }
-    
+
     /**
      * Initialize this elevator controller. The controller will access the
      * elevator bank through <i>controls</i>. This constructor should return

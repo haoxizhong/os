@@ -1,3 +1,5 @@
+//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
+//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -50,65 +52,65 @@ import java.util.LinkedList;
  * lot easier to implement.
  */
 public class Condition {
-	/**
-	 * Allocate a new condition variable.
-	 *
-	 * @param	conditionLock	the lock associated with this condition
-	 *				variable. The current thread must hold this
-	 *				lock whenever it uses <tt>sleep()</tt>,
-	 *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
-	 */
-	public Condition(Lock conditionLock) {
-		this.conditionLock = conditionLock;
+    /**
+     * Allocate a new condition variable.
+     *
+     * @param	conditionLock	the lock associated with this condition
+     *				variable. The current thread must hold this
+     *				lock whenever it uses <tt>sleep()</tt>,
+     *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
+     */
+    public Condition(Lock conditionLock) {
+	this.conditionLock = conditionLock;
 
-		waitQueue = new LinkedList<Semaphore>();
-	}
+	waitQueue = new LinkedList<Semaphore>();
+    }
 
-	/**
-	 * Atomically release the associated lock and go to sleep on this condition
-	 * variable until another thread wakes it using <tt>wake()</tt>. The
-	 * current thread must hold the associated lock. The thread will
-	 * automatically reacquire the lock before <tt>sleep()</tt> returns.
-	 *
-	 * <p>
-	 * This implementation uses semaphores to implement this, by allocating a
-	 * semaphore for each waiting thread. The waker will <tt>V()</tt> this
-	 * semaphore, so thre is no chance the sleeper will miss the wake-up, even
-	 * though the lock is released before caling <tt>P()</tt>.
-	 */
-	public void sleep() {
-		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+    /**
+     * Atomically release the associated lock and go to sleep on this condition
+     * variable until another thread wakes it using <tt>wake()</tt>. The
+     * current thread must hold the associated lock. The thread will
+     * automatically reacquire the lock before <tt>sleep()</tt> returns.
+     *
+     * <p>
+     * This implementation uses semaphores to implement this, by allocating a
+     * semaphore for each waiting thread. The waker will <tt>V()</tt> this
+     * semaphore, so thre is no chance the sleeper will miss the wake-up, even
+     * though the lock is released before caling <tt>P()</tt>.
+     */
+    public void sleep() {
+	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
-		Semaphore waiter = new Semaphore(0);
-		waitQueue.add(waiter);
+	Semaphore waiter = new Semaphore(0);
+	waitQueue.add(waiter);
 
-		conditionLock.release();
-		waiter.P();
-		conditionLock.acquire();	
-	}
+	conditionLock.release();
+	waiter.P();
+	conditionLock.acquire();
+    }
 
-	/**
-	 * Wake up at most one thread sleeping on this condition variable. The
-	 * current thread must hold the associated lock.
-	 */
-	public void wake() {
-		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+    /**
+     * Wake up at most one thread sleeping on this condition variable. The
+     * current thread must hold the associated lock.
+     */
+    public void wake() {
+	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
-		if (!waitQueue.isEmpty())
-			((Semaphore) waitQueue.removeFirst()).V();
-	}
+	if (!waitQueue.isEmpty())
+	    ((Semaphore) waitQueue.removeFirst()).V();
+    }
 
-	/**
-	 * Wake up all threads sleeping on this condition variable. The current
-	 * thread must hold the associated lock.
-	 */
-	public void wakeAll() {
-		Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+    /**
+     * Wake up all threads sleeping on this condition variable. The current
+     * thread must hold the associated lock.
+     */
+    public void wakeAll() {
+	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
-		while (!waitQueue.isEmpty())
-			wake();
-	}
+	while (!waitQueue.isEmpty())
+	    wake();
+    }
 
-	private Lock conditionLock;
-	private LinkedList<Semaphore> waitQueue;
+    private Lock conditionLock;
+    private LinkedList<Semaphore> waitQueue;
 }

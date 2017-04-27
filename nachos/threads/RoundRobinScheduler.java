@@ -1,3 +1,5 @@
+//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
+//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -18,7 +20,7 @@ public class RoundRobinScheduler extends Scheduler {
      */
     public RoundRobinScheduler() {
     }
-    
+
     /**
      * Allocate a new FIFO thread queue.
      *
@@ -35,10 +37,10 @@ public class RoundRobinScheduler extends Scheduler {
 	 * Add a thread to the end of the wait queue.
 	 *
 	 * @param	thread	the thread to append to the queue.
-	 */    
+	 */
 	public void waitForAccess(KThread thread) {
 	    Lib.assertTrue(Machine.interrupt().disabled());
-		       
+
 	    waitQueue.add(thread);
 	}
 
@@ -51,7 +53,7 @@ public class RoundRobinScheduler extends Scheduler {
 	 */
 	public KThread nextThread() {
 	    Lib.assertTrue(Machine.interrupt().disabled());
-		       
+
 	    if (waitQueue.isEmpty())
 		return null;
 
@@ -65,7 +67,7 @@ public class RoundRobinScheduler extends Scheduler {
 	 */
 	public void acquire(KThread thread) {
 	    Lib.assertTrue(Machine.interrupt().disabled());
-		       
+
 	    Lib.assertTrue(waitQueue.isEmpty());
 	}
 

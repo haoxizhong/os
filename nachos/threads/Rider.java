@@ -1,3 +1,5 @@
+//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
+//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -12,7 +14,7 @@ public class Rider implements RiderInterface {
      */
     public Rider() {
     }
-    
+
     /**
      * Initialize this rider. The rider will access the elevator bank through
      * <i>controls</i>, and the rider will make stops at different floors as

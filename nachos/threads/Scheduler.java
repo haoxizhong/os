@@ -1,3 +1,5 @@
+//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
+//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -13,7 +15,7 @@ public abstract class Scheduler {
      */
     public Scheduler() {
     }
-    
+
     /**
      * Allocate a new thread queue. If <i>transferPriority</i> is
      * <tt>true</tt>, then threads waiting on the new queue will transfer their
