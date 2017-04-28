@@ -22,6 +22,7 @@ public class UserProcess {
 	/**
 	 * Allocate a new process.
 	 */
+
 	public UserProcess() {
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
@@ -30,6 +31,8 @@ public class UserProcess {
 
 		fileManager.setFile(0,UserKernel.console.openForReading());
 		fileManager.setFile(1,UserKernel.console.openForWriting());
+		numProcess++;
+		first = (numProcess == 1);
 	}
 
 	/**
@@ -140,8 +143,19 @@ public class UserProcess {
 		if (vaddr < 0 || vaddr >= memory.length)
 			return 0;
 
-		int amount = Math.min(length, memory.length-vaddr);
-		System.arraycopy(memory, vaddr, data, offset, amount);
+		//int amount = Math.min(length, memory.length-vaddr);
+		//System.arraycopy(memory, vaddr, data, offset, amount);
+
+		int amount=0;
+		for (int a=0;a<length && a+vaddr<memory.length;a++) {
+			TranslationEntry page = pageTable[(a+vaddr)/pageSize];
+			if (page == null || page.valid == false) {
+				System.out.println("Cannot read");
+				return 0;
+			}
+			data[a] = memory[page.ppn*pageSize+(a+vaddr)%pageSize];
+			amount ++;
+		}
 
 		return amount;
 	}
@@ -183,8 +197,19 @@ public class UserProcess {
 		if (vaddr < 0 || vaddr >= memory.length)
 			return 0;
 
-		int amount = Math.min(length, memory.length-vaddr);
-		System.arraycopy(data, offset, memory, vaddr, amount);
+		//int amount = Math.min(length, memory.length-vaddr);
+		//System.arraycopy(data, offset, memory, vaddr, amount);
+
+		int amount=0;
+		for (int a=0;a<length && a+vaddr<memory.length;a++) {
+			TranslationEntry page = pageTable[(a+vaddr)/pageSize];
+			if (page == null || page.valid == false || page.readOnly == true) {
+				System.out.println("Cannot write");
+				return 0;
+			}
+			memory[page.ppn*pageSize+(a+vaddr)%pageSize] = data[a];
+			amount ++;
+		}
 
 		return amount;
 	}
@@ -300,9 +325,13 @@ public class UserProcess {
 
 			for (int i=0; i<section.getLength(); i++) {
 				int vpn = section.getFirstVPN()+i;
+				int ppn = UserKernel.getFreePage();
+
+				pageTable[vpn] = new TranslationEntry(vpn,ppn,true,section.isReadOnly(),false,false);
 
 				// for now, just assume virtual addresses=physical addresses
-				section.loadPage(i, vpn);
+				//section.loadPage(i, vpn);
+				section.loadPage(i, ppn);
 			}
 		}
 
@@ -313,6 +342,17 @@ public class UserProcess {
 	 * Release any resources allocated by <tt>loadSections()</tt>.
 	 */
 	protected void unloadSections() {
+		for (int a=0;a<numPages;a++)
+			UserKernel.addFreePage(pageTable[a].ppn);
+		for (int a=0;a<maxFileNumber;a++)
+		{
+			OpenFile file = fileManager.getFile(a);
+			if (file != null) 
+			{
+				file.close();
+				fileManager.closeFile(a);
+			}
+		}
 	}    
 
 	/**
@@ -356,6 +396,7 @@ public class UserProcess {
 	 * Handle the halt() system call. 
 	 */
 	private int handleHalt() {
+		if (first == false) return -1;
 
 		Machine.halt();
 
@@ -363,10 +404,14 @@ public class UserProcess {
 		return 0;
 	}
 
-	/*private int handleExit(int status) {
-	}
+	private int handleExit(int status) {
+		unloadSections();
+		numProcess--;
+		if (numProcess == 0) Kernel.kernel.terminate();
+		else UThread.finish();
 
-	*/
+		return 0;
+	}
 	
 	private int handleExec(int fileNameAdd,int argc,int argdAdd) {
 		//checkAddress(fileNameAdd);
@@ -375,8 +420,9 @@ public class UserProcess {
 		return 0;
 	}
 
-	/*private int handleJoin() {
-	}*/
+	private int handleJoin() {
+		return 0;
+	}
 
 	class FileManager {
 		OpenFile[] fileList;
@@ -662,4 +708,6 @@ public class UserProcess {
 	private static final int pageSize = Processor.pageSize;
 	private static final char dbgProcess = 'a';
 
+	public static int numProcess = 0;
+	public boolean first;
 }
