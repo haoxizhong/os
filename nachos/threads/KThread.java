@@ -525,7 +525,7 @@ public class KThread {
 		new PingTest(0).run();
 		forked.join();	
 */		
-		test4();
+		//test4();
 	}
 
 	private static final char dbgThread = 't';

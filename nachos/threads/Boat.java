@@ -13,7 +13,6 @@ public class Boat
     
     public static void selfTest()
     {
-    	
 	FakeGrader b = new Boat.FakeGrader();
 	
 	System.out.println("\n ***Testing Boats with several children and several adults***");
