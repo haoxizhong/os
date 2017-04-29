@@ -8,6 +8,9 @@ import java.io.EOFException;
 
 import java.util.LinkedList;
 
+import java.io.IOException;
+
+
 /**
  * Encapsulates the state of a user process that is not contained in its
  * user thread (or threads). This includes its address translation state, a
@@ -31,10 +34,12 @@ public class UserProcess {
 	public boolean first;
 
 	public UserProcess() {
+//		        final String dir = System.getProperty("user.dir");
+//				        System.out.println("current dir = " + dir);
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
-		for (int i=0; i<numPhysPages; i++)
-			pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+		//for (int i=0; i<numPhysPages; i++)
+		//	pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
 
 		fileManager.setFile(0,UserKernel.console.openForReading());
 		fileManager.setFile(1,UserKernel.console.openForWriting());
@@ -66,13 +71,13 @@ public class UserProcess {
 			return false;
 
 		numProcess++;
-		first = (numProcess == 1);
 		numTotalProcess ++;
+		first = (numTotalProcess == 1);
 		pid = numTotalProcess;
 
 		UThread thread =new UThread(this);
 
-		if (threadToJoin == null) threadToJoin = thread;
+		threadToJoin = thread;
 		
 		thread.setName(name).fork();
 
@@ -167,8 +172,10 @@ public class UserProcess {
 			TranslationEntry page = pageTable[(a+vaddr)/pageSize];
 			if (page == null || page.valid == false) {
 				System.out.println("Cannot read");
-				return 0;
+				//return 0;
+				break;
 			}
+			//page.used=true; nya
 			data[a] = memory[page.ppn*pageSize+(a+vaddr)%pageSize];
 			amount ++;
 		}
@@ -219,9 +226,10 @@ public class UserProcess {
 		int amount=0;
 		for (int a=0;a<length && a+vaddr<memory.length;a++) {
 			TranslationEntry page = pageTable[(a+vaddr)/pageSize];
+			//System.out.println(a);
 			if (page == null || page.valid == false || page.readOnly == true) {
 				System.out.println("Cannot write");
-				return 0;
+				return -1;
 			}
 			memory[page.ppn*pageSize+(a+vaddr)%pageSize] = data[a];
 			amount ++;
@@ -243,6 +251,8 @@ public class UserProcess {
 	private boolean load(String name, String[] args) {
 		Lib.debug(dbgProcess, "UserProcess.load(\"" + name + "\")");
 
+		if (UserKernel.fileManager.openFile(name) == false) return false;
+
 		OpenFile executable = ThreadedKernel.fileSystem.open(name, false);
 		if (executable == null) {
 			Lib.debug(dbgProcess, "\topen failed");
@@ -255,6 +265,7 @@ public class UserProcess {
 		catch (EOFException e) {
 			executable.close();
 			Lib.debug(dbgProcess, "\tcoff load failed");
+			UserKernel.fileManager.closeFile(name);
 			return false;
 		}
 
@@ -264,6 +275,7 @@ public class UserProcess {
 			CoffSection section = coff.getSection(s);
 			if (section.getFirstVPN() != numPages) {
 				coff.close();
+				UserKernel.fileManager.closeFile(name);
 				Lib.debug(dbgProcess, "\tfragmented executable");
 				return false;
 			}
@@ -281,6 +293,7 @@ public class UserProcess {
 		if (argsSize > pageSize) {
 			coff.close();
 			Lib.debug(dbgProcess, "\targuments too long");
+			UserKernel.fileManager.closeFile(name);
 			return false;
 		}
 
@@ -288,14 +301,26 @@ public class UserProcess {
 		initialPC = coff.getEntryPoint();	
 
 		// next comes the stack; stack pointer initially points to top of it
+		for (int a=0;a<stackPages;a++)
+		{
+			int vpn = a+numPages;
+			int ppn = UserKernel.getFreePage();
+			pageTable[vpn] = new TranslationEntry(vpn,ppn,true,false,false,false);
+		}
 		numPages += stackPages;
 		initialSP = numPages*pageSize;
 
+
 		// and finally reserve 1 page for arguments
+		int ppn = UserKernel.getFreePage();
+		pageTable[numPages] = new TranslationEntry(numPages,ppn,true,false,false,false);
 		numPages++;
 
 		if (!loadSections())
+		{
+			UserKernel.fileManager.closeFile(name);
 			return false;
+		}
 
 		// store arguments in last page
 		int entryOffset = (numPages-1)*pageSize;
@@ -359,7 +384,10 @@ public class UserProcess {
 	 */
 	protected void unloadSections() {
 		for (int a=0;a<numPages;a++)
-			UserKernel.addFreePage(pageTable[a].ppn);
+		{
+			//System.out.println(pageTable[a]);
+			if (pageTable[a]!=null) UserKernel.addFreePage(pageTable[a].ppn);
+		}
 		for (int a=0;a<maxFileNumber;a++)
 		{
 			OpenFile file = fileManager.getFile(a);
@@ -424,7 +452,7 @@ public class UserProcess {
 		retCode = status;
 		unloadSections();
 		numProcess--;
-		System.out.println(numProcess);
+		//System.out.println("ggwp"+numProcess);
 		if (numProcess == 0) Kernel.kernel.terminate();
 		else UThread.finish();
 
@@ -434,11 +462,21 @@ public class UserProcess {
 	LinkedList<UserProcess> processList = new LinkedList<>();
 	
 	private int handleExec(int fileNameAdd,int argc,int argvAdd) {
+		/*try{
+		java.lang.Runtime rt = Runtime.getRuntime();
+		java.lang.Process pr = rt.exec("pwd");
+		}
+		catch (IOException e)
+		{
+		}
+		finally{
+		}*/
 		int status = -1;
 
 		try {
 			checkAddress(fileNameAdd);
 			String filename = readVirtualMemoryString(fileNameAdd,256);
+			System.out.println(filename);
 			checkAndThrow(argc<0,"argc less than 0");
 
 			checkAddress(argvAdd);
@@ -469,6 +507,7 @@ public class UserProcess {
 	boolean work = true;
 	int retCode;
 	UThread threadToJoin = null;
+	boolean joinOnlyOnce = false;
 
 	private int handleJoin(int pid,int statusAdd) {
 		int status = -1;
@@ -483,8 +522,10 @@ public class UserProcess {
 				{
 					find=true;
 					UserProcess process = processList.get(a);
-					System.out.println(process);
-					System.out.println(process.threadToJoin);
+					//System.out.println(process);
+					//System.out.println(process.threadToJoin);
+					checkAndThrow(process.joinOnlyOnce,"Can only join once");
+					process.joinOnlyOnce = true;
 					process.threadToJoin.join();
 					if (process.work) status=1;
 					else status=0;
@@ -542,6 +583,7 @@ public class UserProcess {
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
 			int fd = fileManager.getFD();
 			checkAndThrow(fd == -1, "File full");
+			checkAndThrow(UserKernel.fileManager.openFile(fileName) == false,"Something wrong while openning");
 			OpenFile file = UserKernel.fileSystem.open(fileName,true);
 			checkAndThrow(file == null, "Cannot open file");
 			fileManager.setFile(fd,file);
@@ -563,6 +605,7 @@ public class UserProcess {
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
 			int fd = fileManager.getFD();
 			checkAndThrow(fd == -1, "File full");
+			checkAndThrow(UserKernel.fileManager.openFile(fileName) == false,"Something wrong while openning");
 			OpenFile file = UserKernel.fileSystem.open(fileName,false);
 			//System.out.println(file);
 			checkAndThrow(file == null,"Cannot open file");
@@ -636,6 +679,8 @@ public class UserProcess {
 
 			OpenFile file = fileManager.getFile(fd);
 			checkAndThrow(file == null,"No such file");
+			String fileName = file.getName();
+			UserKernel.fileManager.closeFile(fileName);
 
 			file.close();
 			fileManager.closeFile(fd);
@@ -656,6 +701,7 @@ public class UserProcess {
 			checkAddress(fileNameAdd);
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
 			boolean success = UserKernel.fileSystem.remove(fileName);
+			checkAndThrow(UserKernel.fileManager.removeFile(fileName) == false,"Something wrong while removing");
 			checkAndThrow(success == false,"Remove failed");
 
 			status = 0;
@@ -709,7 +755,7 @@ public class UserProcess {
 	 * @return	the value to be returned to the user.
 	 */
 	public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
-		//System.out.println(syscall + " " + a0 + " " + a1 + " " + a2 + " " + a3);
+		//if (syscall != 6 && syscall != 7) System.out.println(syscall + " " + a0 + " " + a1 + " " + a2 + " " + a3);
 		switch (syscall) {
 			case syscallHalt:
 				return handleHalt();
@@ -765,10 +811,12 @@ public class UserProcess {
 				break;				       
 
 			default:
+				System.out.println(cause);
 				Lib.debug(dbgProcess, "Unexpected exception: " +
 						Processor.exceptionNames[cause]);
-				Lib.assertNotReached("Unexpected exception");
 				work = false;
+				handleExit(0);
+				Lib.assertNotReached("Unexpected exception");
 		}
 	}
 

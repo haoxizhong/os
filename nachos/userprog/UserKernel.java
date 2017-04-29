@@ -5,11 +5,65 @@ import nachos.threads.*;
 import nachos.userprog.*;
 
 import java.util.LinkedList;
+import java.util.HashMap;
 
 /**
  * A kernel that can support multiple user processes.
  */
 public class UserKernel extends ThreadedKernel {
+	class zhxFile {
+		String filename;
+		int threadOpenIt = 0;
+		boolean delete = false;
+		public zhxFile(String name) {
+			filename = name;
+			threadOpenIt = 1;
+		}
+	}
+	class FileManager {
+		HashMap<String,zhxFile> map = new HashMap<String,zhxFile>();
+
+		public boolean openFile(String name) {
+			if (map.containsKey(name)) {
+				zhxFile file = map.get(name);
+				if (file.delete) return false;
+				file.threadOpenIt ++;
+			}
+			else {
+				map.put(name,new zhxFile(name));
+			}
+			return true;
+		}
+
+		public void closeFile(String name) {
+			zhxFile file = map.get(name);
+			file.threadOpenIt --;
+			if (file.threadOpenIt == 0) {
+				map.remove(file);
+				if (file.delete == true) {
+					UserKernel.fileSystem.remove(name);
+				}
+			}
+		}
+
+		public boolean removeFile(String name) {
+			if (!map.containsKey(name)) {
+				return true;
+			}
+			zhxFile file = map.get(name);
+			if (file.threadOpenIt != 0) {
+				file.delete = true;
+			}
+			else {
+				UserKernel.fileSystem.remove(name);
+				//System.out.println("I think it's impossible");
+			}
+
+			return true;
+		}
+	}
+
+	public static FileManager fileManager = null;
 	/**
 	 * Allocate a new user kernel.
 	 */
@@ -40,6 +94,7 @@ public class UserKernel extends ThreadedKernel {
 			pageList.add(a);
 
 		lock = new Lock();
+		fileManager = new FileManager();
 	}
 
 	private static Lock lock;
@@ -109,6 +164,7 @@ public class UserKernel extends ThreadedKernel {
 
 		UserProcess process = ((UThread) KThread.currentThread()).process;
 		int cause = Machine.processor().readRegister(Processor.regCause);
+		//System.out.println(cause);
 		process.handleException(cause);
 	}
 
