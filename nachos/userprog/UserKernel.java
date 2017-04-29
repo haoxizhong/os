@@ -35,7 +35,6 @@ public class UserKernel extends ThreadedKernel {
 		int numPhysical = Machine.processor().getNumPhysPages();
 
 		pageList = new LinkedList<>();
-		System.out.println(numPhysical);
 
 		for (int a=0;a<numPhysical;a++)
 			pageList.add(a);
@@ -66,7 +65,7 @@ public class UserKernel extends ThreadedKernel {
 	public void selfTest() {
 		super.selfTest();
 
-		System.out.println("Testing the console device. Typed characters");
+		/*System.out.println("Testing the console device. Typed characters");
 		System.out.println("will be echoed until q is typed.");
 
 		char c;
@@ -77,7 +76,7 @@ public class UserKernel extends ThreadedKernel {
 		}
 		while (c != 'q');
 
-		System.out.println("");
+		System.out.println("");*/
 	}
 
 	/**
@@ -126,7 +125,10 @@ public class UserKernel extends ThreadedKernel {
 		UserProcess process = UserProcess.newUserProcess();
 
 		String shellProgram = Machine.getShellProgramName();	
-		Lib.assertTrue(process.execute(shellProgram, new String[] { }));
+		String[] args = new String[2];
+		args[0]="cat";
+		args[1]="a.txt";
+		Lib.assertTrue(process.execute(shellProgram, args));
 
 		KThread.currentThread().finish();
 	}

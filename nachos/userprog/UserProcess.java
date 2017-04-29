@@ -6,6 +6,8 @@ import nachos.userprog.*;
 
 import java.io.EOFException;
 
+import java.util.LinkedList;
+
 /**
  * Encapsulates the state of a user process that is not contained in its
  * user thread (or threads). This includes its address translation state, a
@@ -23,6 +25,11 @@ public class UserProcess {
 	 * Allocate a new process.
 	 */
 
+	public int pid;
+	public static int numProcess = 0;
+	public static int numTotalProcess = 0;
+	public boolean first;
+
 	public UserProcess() {
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
@@ -31,8 +38,6 @@ public class UserProcess {
 
 		fileManager.setFile(0,UserKernel.console.openForReading());
 		fileManager.setFile(1,UserKernel.console.openForWriting());
-		numProcess++;
-		first = (numProcess == 1);
 	}
 
 	/**
@@ -55,10 +60,21 @@ public class UserProcess {
 	 * @return	<tt>true</tt> if the program was successfully executed.
 	 */
 	public boolean execute(String name, String[] args) {
+		//System.out.println(name);
+		//System.out.println(args);
 		if (!load(name, args))
 			return false;
 
-		new UThread(this).setName(name).fork();
+		numProcess++;
+		first = (numProcess == 1);
+		numTotalProcess ++;
+		pid = numTotalProcess;
+
+		UThread thread =new UThread(this);
+
+		if (threadToJoin == null) threadToJoin = thread;
+		
+		thread.setName(name).fork();
 
 		return true;
 	}
@@ -405,23 +421,86 @@ public class UserProcess {
 	}
 
 	private int handleExit(int status) {
+		retCode = status;
 		unloadSections();
 		numProcess--;
+		System.out.println(numProcess);
 		if (numProcess == 0) Kernel.kernel.terminate();
 		else UThread.finish();
 
 		return 0;
 	}
+
+	LinkedList<UserProcess> processList = new LinkedList<>();
 	
-	private int handleExec(int fileNameAdd,int argc,int argdAdd) {
-		//checkAddress(fileNameAdd);
-		String fileName = readVirtualMemoryString(fileNameAdd,256);
-		System.out.println(fileName);
-		return 0;
+	private int handleExec(int fileNameAdd,int argc,int argvAdd) {
+		int status = -1;
+
+		try {
+			checkAddress(fileNameAdd);
+			String filename = readVirtualMemoryString(fileNameAdd,256);
+			checkAndThrow(argc<0,"argc less than 0");
+
+			checkAddress(argvAdd);
+			String[] argv = new String[argc];
+			for (int a=0;a<argc;a++)
+			{
+				byte[] nowop = new byte[4];
+				int numRead = readVirtualMemory(argvAdd+4*a,nowop,0,4);
+				checkAndThrow(numRead != 4,"Something wrong in read");
+				int nowAdd = Lib.bytesToInt(nowop,0,4);
+
+				checkAddress(nowAdd);
+
+				argv[a] = readVirtualMemoryString(nowAdd,256);
+			}
+			UserProcess process = new UserProcess();
+			if (process.execute(filename,argv)) status = process.pid;
+			else status = -1;
+			processList.add(process);
+		}
+		catch (zhxException e) {
+			e.printStackTrace();
+		}
+
+		return status;
 	}
 
-	private int handleJoin() {
-		return 0;
+	boolean work = true;
+	int retCode;
+	UThread threadToJoin = null;
+
+	private int handleJoin(int pid,int statusAdd) {
+		int status = -1;
+		
+		try{
+			checkAddress(statusAdd);
+
+			boolean find = false;
+
+			for (int a=0;a<processList.size();a++)
+				if (processList.get(a).pid == pid)
+				{
+					find=true;
+					UserProcess process = processList.get(a);
+					System.out.println(process);
+					System.out.println(process.threadToJoin);
+					process.threadToJoin.join();
+					if (process.work) status=1;
+					else status=0;
+					int code = process.retCode;
+					byte[] codeByte = Lib.bytesFromInt(code);
+					int numWrite = writeVirtualMemory(statusAdd,codeByte,0,4);
+					checkAndThrow(numWrite !=4,"Something error while writing");
+					break;
+				}
+			checkAndThrow(!find,"No process to join");
+		}
+		catch (zhxException e) {
+			e.printStackTrace();
+		}
+
+		return status;
 	}
 
 	class FileManager {
@@ -456,7 +535,7 @@ public class UserProcess {
 
 	private int handleCreate(int fileNameAdd) {
 		int status = -1;
-		System.out.println("creating something");
+		//System.out.println("creating something");
 
 		try {
 			checkAddress(fileNameAdd);
@@ -478,7 +557,6 @@ public class UserProcess {
 
 	private int handleOpen(int fileNameAdd) {
 		int status = -1;
-		System.out.println("opening something");
 
 		try {
 			checkAddress(fileNameAdd);
@@ -486,6 +564,7 @@ public class UserProcess {
 			int fd = fileManager.getFD();
 			checkAndThrow(fd == -1, "File full");
 			OpenFile file = UserKernel.fileSystem.open(fileName,false);
+			//System.out.println(file);
 			checkAndThrow(file == null,"Cannot open file");
 			fileManager.setFile(fd,file);
 			status = fd;
@@ -630,16 +709,16 @@ public class UserProcess {
 	 * @return	the value to be returned to the user.
 	 */
 	public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
-		System.out.println(syscall + " " + a0 + " " + a1 + " " + a2 + " " + a3);
+		//System.out.println(syscall + " " + a0 + " " + a1 + " " + a2 + " " + a3);
 		switch (syscall) {
 			case syscallHalt:
 				return handleHalt();
-			/*case syscallExit:
-				return handleExit();*/
+			case syscallExit:
+				return handleExit(a0);
 			case syscallExec:
 				return handleExec(a0,a1,a2);
-			/*case syscallJoin:
-				return handleJoin();*/
+			case syscallJoin:
+				return handleJoin(a0,a1);
 			case syscallCreate:
 				return handleCreate(a0);
 			case syscallOpen:
@@ -657,6 +736,7 @@ public class UserProcess {
 			default:
 				Lib.debug(dbgProcess, "Unknown syscall " + syscall);
 				Lib.assertNotReached("Unknown system call!");
+				work = false;
 		}
 		return 0;
 	}
@@ -688,6 +768,7 @@ public class UserProcess {
 				Lib.debug(dbgProcess, "Unexpected exception: " +
 						Processor.exceptionNames[cause]);
 				Lib.assertNotReached("Unexpected exception");
+				work = false;
 		}
 	}
 
@@ -708,6 +789,4 @@ public class UserProcess {
 	private static final int pageSize = Processor.pageSize;
 	private static final char dbgProcess = 'a';
 
-	public static int numProcess = 0;
-	public boolean first;
 }

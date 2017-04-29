@@ -55,6 +55,7 @@ public class AutoGrader {
 	if (testArgsString == null) {
 		testArgsString = "";
 	}
+	System.out.println(args);
 	
 	for (int i=0; i<args.length; ) {
 	    String arg = args[i++];
