@@ -700,8 +700,8 @@ public class UserProcess {
 		try {
 			checkAddress(fileNameAdd);
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
-			boolean success = UserKernel.fileSystem.remove(fileName);
 			checkAndThrow(UserKernel.fileManager.removeFile(fileName) == false,"Something wrong while removing");
+			boolean success = UserKernel.fileSystem.remove(fileName);
 			checkAndThrow(success == false,"Remove failed");
 
 			status = 0;
