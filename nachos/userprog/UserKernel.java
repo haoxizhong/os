@@ -11,6 +11,7 @@ import java.util.HashMap;
  * A kernel that can support multiple user processes.
  */
 public class UserKernel extends ThreadedKernel {
+
 	class zhxFile {
 		String filename;
 		int threadOpenIt = 0;
@@ -20,6 +21,7 @@ public class UserKernel extends ThreadedKernel {
 			threadOpenIt = 1;
 		}
 	}
+
 	class FileManager {
 		HashMap<String,zhxFile> map = new HashMap<String,zhxFile>();
 
@@ -57,6 +59,7 @@ public class UserKernel extends ThreadedKernel {
 			else {
 				UserKernel.fileSystem.remove(name);
 				//System.out.println("I think it's impossible");
+				//System.out.println("I don't know why mv can reach heer");
 			}
 
 			return true;
@@ -181,9 +184,10 @@ public class UserKernel extends ThreadedKernel {
 		UserProcess process = UserProcess.newUserProcess();
 
 		String shellProgram = Machine.getShellProgramName();	
-		String[] args = new String[2];
+		/*String[] args = new String[2];
 		args[0]="cat";
-		args[1]="a.txt";
+		args[1]="a.txt";*/
+		String[] args = new String[0];
 		Lib.assertTrue(process.execute(shellProgram, args));
 
 		KThread.currentThread().finish();

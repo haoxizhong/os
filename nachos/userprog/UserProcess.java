@@ -41,8 +41,8 @@ public class UserProcess {
 		//for (int i=0; i<numPhysPages; i++)
 		//	pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
 
-		fileManager.setFile(0,UserKernel.console.openForReading());
-		fileManager.setFile(1,UserKernel.console.openForWriting());
+		setFile(0,UserKernel.console.openForReading());
+		setFile(1,UserKernel.console.openForWriting());
 	}
 
 	/**
@@ -229,7 +229,8 @@ public class UserProcess {
 			//System.out.println(a);
 			if (page == null || page.valid == false || page.readOnly == true) {
 				System.out.println("Cannot write");
-				return -1;
+				//return -1;
+				break;
 			}
 			memory[page.ppn*pageSize+(a+vaddr)%pageSize] = data[a];
 			amount ++;
@@ -390,11 +391,11 @@ public class UserProcess {
 		}
 		for (int a=0;a<maxFileNumber;a++)
 		{
-			OpenFile file = fileManager.getFile(a);
+			OpenFile file = getFile(a);
 			if (file != null) 
 			{
 				file.close();
-				fileManager.closeFile(a);
+				closeFile(a);
 			}
 		}
 	}    
@@ -544,35 +545,28 @@ public class UserProcess {
 		return status;
 	}
 
-	class FileManager {
-		OpenFile[] fileList;
+	public final int maxFileNumber = 16;
+	
+	OpenFile[] fileList = new OpenFile[16];
 
-		public FileManager(int n) {
-			fileList = new OpenFile[n];
-		}
-
-		public int getFD() {
-			for (int a=0;a<fileList.length;a++)
-				if (fileList[a] == null) return a;
-			return -1;
-		}
-
-		public OpenFile getFile(int fd) {
-			return fileList[fd];
-		}
-
-		public void closeFile(int fd) {
-			fileList[fd] = null;
-		}
-
-		public void setFile(int fd,OpenFile file) {
-			fileList[fd] = file;
-		}
+	public int getFD() {
+		for (int a=0;a<fileList.length;a++)
+			if (fileList[a] == null) return a;
+		return -1;
 	}
 
-	public final int maxFileNumber = 16;
+	public OpenFile getFile(int fd) {
+		return fileList[fd];
+	}
 
-	FileManager fileManager = new FileManager(maxFileNumber);
+	public void closeFile(int fd) {
+		fileList[fd] = null;
+	}
+
+	public void setFile(int fd,OpenFile file) {
+		fileList[fd] = file;
+	}
+
 
 	private int handleCreate(int fileNameAdd) {
 		int status = -1;
@@ -581,12 +575,12 @@ public class UserProcess {
 		try {
 			checkAddress(fileNameAdd);
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
-			int fd = fileManager.getFD();
+			int fd = getFD();
 			checkAndThrow(fd == -1, "File full");
 			checkAndThrow(UserKernel.fileManager.openFile(fileName) == false,"Something wrong while openning");
 			OpenFile file = UserKernel.fileSystem.open(fileName,true);
 			checkAndThrow(file == null, "Cannot open file");
-			fileManager.setFile(fd,file);
+			setFile(fd,file);
 			status=fd;
 		}
 		catch (zhxException e)
@@ -603,13 +597,13 @@ public class UserProcess {
 		try {
 			checkAddress(fileNameAdd);
 			String fileName = readVirtualMemoryString(fileNameAdd,256);
-			int fd = fileManager.getFD();
+			int fd = getFD();
 			checkAndThrow(fd == -1, "File full");
 			checkAndThrow(UserKernel.fileManager.openFile(fileName) == false,"Something wrong while openning");
 			OpenFile file = UserKernel.fileSystem.open(fileName,false);
 			//System.out.println(file);
 			checkAndThrow(file == null,"Cannot open file");
-			fileManager.setFile(fd,file);
+			setFile(fd,file);
 			status = fd;
 		}
 		catch (zhxException e) {
@@ -627,7 +621,7 @@ public class UserProcess {
 			checkAddress(bufferAdd);
 			checkAddress(bufferAdd+size-1);
 			checkAndThrow(fd<0 || fd>=maxFileNumber,"fd out of range");
-			OpenFile file = fileManager.getFile(fd);
+			OpenFile file = getFile(fd);
 			checkAndThrow(file == null,"No such file");
 			
 			byte[] buffer = new byte[size];
@@ -654,7 +648,7 @@ public class UserProcess {
 			checkAddress(bufferAdd+size-1);
 			checkAndThrow(fd<0 || fd>=maxFileNumber,"fd out of range");
 
-			OpenFile file = fileManager.getFile(fd);
+			OpenFile file = getFile(fd);
 			checkAndThrow(file == null,"No such file");
 
 			byte[] buffer = new byte[size];
@@ -677,13 +671,13 @@ public class UserProcess {
 		try {
 			checkAndThrow(fd<0 || fd>=maxFileNumber,"fd out of range");
 
-			OpenFile file = fileManager.getFile(fd);
+			OpenFile file = getFile(fd);
 			checkAndThrow(file == null,"No such file");
 			String fileName = file.getName();
 			UserKernel.fileManager.closeFile(fileName);
 
 			file.close();
-			fileManager.closeFile(fd);
+			closeFile(fd);
 
 			status = 0;
 		}
@@ -815,7 +809,7 @@ public class UserProcess {
 				Lib.debug(dbgProcess, "Unexpected exception: " +
 						Processor.exceptionNames[cause]);
 				work = false;
-				handleExit(0);
+				handleExit(cause);
 				Lib.assertNotReached("Unexpected exception");
 		}
 	}
