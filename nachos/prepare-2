@@ -1,0 +1,6 @@
+#!/bin/sh
+echo "Please enter your group leader student number"
+read number
+filename=${number}-$1.tar
+tar -cf $filename threads userprog
+echo "Please submit $filename to learn.tsinghua.edu.cn"
