@@ -1,0 +1,3 @@
+This is an example of database server written in Java.
+
+It is a Maven project, and you need Maven and jdk >= 1.7 to compile the project.

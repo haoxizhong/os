@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "iiis.systems.os.blockdb";
+option java_outer_classname = "DBProto";
+
+package blockdb;
+
+// Interface exported by the server.
+service BlockDatabase {
+    // Return db[UserID]
+	rpc Get(GetRequest) returns (GetResponse) {}
+
+	// Set db[UserID]=Value
+	rpc Put(Request) returns (BooleanResponse) {}
+
+	// Perform db[UserID]+=Value
+	rpc Withdraw(Request) returns (BooleanResponse) {}
+
+	// Perform db[UserID]-=Value
+	// Return Success=false if balance is insufficient
+	rpc Deposit(Request) returns (BooleanResponse) {}
+
+	// Perform db[FromID]-=Value and db[ToID]+=Value
+	// Return Success=false if FromID is same as ToID or balance of FromID is insufficient
+	rpc Transfer(TransferRequest) returns (BooleanResponse) {}
+
+	// Return the length of transient (non-block) log on disk
+	rpc LogLength(Null) returns (GetResponse) {}
+}
+
+message GetRequest {
+	string UserID = 1;
+}
+
+message GetResponse {
+  int32 Value = 1;
+}
+
+message Request {
+	string UserID = 1;
+	int32 Value = 2;
+}
+
+message BooleanResponse {
+	bool Success = 1;
+}
+
+message TransferRequest {
+	string FromID = 1;
+	string ToID = 2;
+	int32 Value = 3;
+}
+
+message Null {}
+
+message Transaction {
+	enum Types {
+		UNKNOWN = 0;
+		GET = 1;
+		PUT = 2;
+		DEPOSIT = 3;
+		WITHDRAW = 4;
+		TRANSFER = 5;
+	}
+	Types Type = 1;
+	string UserID = 2; // Optional
+	string FromID = 3; // Optional
+	string ToID = 4; // Optional
+	int32 Value = 5;
+}
+
+message Block {
+	int32 BlockID = 1;
+	string PrevHash = 2;
+	repeated Transaction Transactions = 3;
+	string Nonce = 4;
+}
