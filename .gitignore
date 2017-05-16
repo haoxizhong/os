@@ -2,3 +2,5 @@
 nachos/proj*/nachos
 *~
 nachos/.idea
+nachos/proj3/proj3/blockdb_java/tmp/*
+nachos/proj3/proj3/blockdb_java/target
