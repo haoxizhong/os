@@ -69,9 +69,11 @@ public class DatabaseEngine {
 					}
 				}
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				e.printStackTrace();
+				System.out.println("There is an error with previous data");
+				System.exit(0);
 				break;
 			}
 		}
