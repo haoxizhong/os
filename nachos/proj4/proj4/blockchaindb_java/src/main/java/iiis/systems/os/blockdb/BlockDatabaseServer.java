@@ -2,6 +2,7 @@ package iiis.systems.os.blockdb;
 
 import iiis.systems.os.blockchaindb.*;
 import io.grpc.Server;
+import io.grpc.internal.Stream;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
 import org.json.JSONException;
@@ -42,12 +43,25 @@ public class BlockDatabaseServer {
 
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         JSONObject config = Util.readJsonFile("config.json");
-        config = (JSONObject) config.get("1");
+        String keyword = "";
+        boolean debug = false;
+        for (int a=0;a<args.length;a++) {
+            if (args[a].startsWith("--id=")) keyword = args[a].substring(5);
+            if (args[a].startsWith("--debug")) debug = true;
+        }
+        config = (JSONObject) config.get(keyword);
         String address = config.getString("ip");
         int port = Integer.parseInt(config.getString("port"));
         String dataDir = config.getString("dataDir");
+        System.out.println(debug);
+        System.out.println(keyword);
+        if (debug && keyword.equals("test")) {
+            Sender sender = new Sender();
+            sender.work(address,port,dataDir);
+            return;
+        }
 
-        DatabaseEngine.setup(dataDir);
+        DatabaseEngine.setup(keyword,dataDir);
 
         final BlockDatabaseServer server = new BlockDatabaseServer();
         server.start(address, port);
@@ -68,8 +82,48 @@ public class BlockDatabaseServer {
 
         @Override
         public void transfer(Transaction request, StreamObserver<BooleanResponse> responseObserver) {
-            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue());
+            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue(),request.getMiningFee(),request.getUUID());
             BooleanResponse response = BooleanResponse.newBuilder().setSuccess(success).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void verify(Transaction request, StreamObserver<VerifyResponse> responseObserver) {
+            int value = dbEngine.verify(request.getUUID());
+            VerifyResponse response = VerifyResponse.newBuilder().setResultValue(value).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void getHeight(Null request, StreamObserver<GetHeightResponse> responseObserver) {
+            int value = dbEngine.getHeight();
+            GetHeightResponse response = GetHeightResponse.newBuilder().setHeight(value).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void getBlock(GetBlockRequest request,StreamObserver<JsonBlockString> responseObserver) {
+            String value = dbEngine.getBlock(request.getBlockHash());
+            JsonBlockString response = JsonBlockString.newBuilder().setJson(value).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void pushBlock(JsonBlockString request,StreamObserver<Null> responseObserver) {
+            dbEngine.pushBlock(request.getJson());
+            Null response = Null.newBuilder().build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void pushTransaction(Transaction request,StreamObserver<Null> responseObserver) {
+            dbEngine.pushTransaction(request.getFromID(), request.getToID(), request.getValue(),request.getMiningFee(),request.getUUID());
+            Null response = Null.newBuilder().build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
