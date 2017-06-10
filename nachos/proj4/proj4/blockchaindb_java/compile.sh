@@ -1,2 +1,2 @@
 #!/bin/bash
-javac src/main/zhx/Main.java
+exec mvn package
