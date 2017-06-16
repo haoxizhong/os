@@ -5,6 +5,8 @@ import iiis.systems.os.blockchaindb.GetRequest;
 import iiis.systems.os.blockchaindb.GetResponse;
 import io.grpc.*;
 
+import java.util.HashMap;
+
 /**
  * Created by zhonghaoxi on 17-6-10.
  */

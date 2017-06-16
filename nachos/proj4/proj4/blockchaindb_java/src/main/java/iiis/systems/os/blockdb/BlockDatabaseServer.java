@@ -49,10 +49,6 @@ public class BlockDatabaseServer {
             if (args[a].startsWith("--id=")) keyword = args[a].substring(5);
             if (args[a].startsWith("--debug")) debug = true;
         }
-        config = (JSONObject) config.get(keyword);
-        String address = config.getString("ip");
-        int port = Integer.parseInt(config.getString("port"));
-        String dataDir = config.getString("dataDir");
         System.out.println(debug);
         System.out.println(keyword);
         if (debug && keyword.equals("test")) {
