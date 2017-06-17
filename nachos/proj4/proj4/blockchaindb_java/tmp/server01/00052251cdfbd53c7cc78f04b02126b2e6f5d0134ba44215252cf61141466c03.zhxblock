@@ -1,0 +1,18 @@
+{"Nonce" : "45761472",
+"BlockID" : 2,
+"PrevHash" : "00009374d39dbe07e78ca0c31583b604c4ca98da0fabc2afc62f2e8a2b500db5",
+"blockHash" : "00052251cdfbd53c7cc78f04b02126b2e6f5d0134ba44215252cf61141466c03",
+"MinerID" : "Server01",
+"height" : "2",
+"Transactions" : [
+{"Type" : "TRANSFER","FromID" : "Test-1-3","ToID" : "Test-1-4","Value" : 219,"MiningFee" : 37,"UUID" : "58b9fb2b-15e2-40b6-8009-ece6fa9090b8"},
+{"Type" : "TRANSFER","FromID" : "Test-1-4","ToID" : "Test-1-9","Value" : 109,"MiningFee" : 50,"UUID" : "ecc6a412-da64-47d9-a213-f21f0723b29d"},
+{"Type" : "TRANSFER","FromID" : "Test-1-9","ToID" : "Test-1-6","Value" : 493,"MiningFee" : 276,"UUID" : "0552f0d5-4dc1-4ef1-bd9f-9be9b7055bbb"},
+{"Type" : "TRANSFER","FromID" : "Test-1-7","ToID" : "Test-1-8","Value" : 299,"MiningFee" : 256,"UUID" : "82b0f177-ff55-48ce-b888-5f0a94162560"},
+{"Type" : "TRANSFER","FromID" : "Test-1-6","ToID" : "Test-1-7","Value" : 106,"MiningFee" : 4,"UUID" : "48a67724-9450-4be6-a30e-7aee639eca61"},
+{"Type" : "TRANSFER","FromID" : "Test-1-8","ToID" : "Test-1-9","Value" : 800,"MiningFee" : 246,"UUID" : "283e7908-6209-402a-8f47-6873b660a599"},
+{"Type" : "TRANSFER","FromID" : "Test-1-4","ToID" : "Test-1-8","Value" : 147,"MiningFee" : 40,"UUID" : "77869687-f572-4a95-bf41-c746d85e7bc0"},
+{"Type" : "TRANSFER","FromID" : "Test-1-3","ToID" : "Test-1-7","Value" : 392,"MiningFee" : 48,"UUID" : "99106753-7568-4c8e-a260-56983031ca45"},
+{"Type" : "TRANSFER","FromID" : "Test-1-9","ToID" : "Test-1-3","Value" : 41,"MiningFee" : 8,"UUID" : "b7bcf05a-54ed-4377-b4c7-85b4c8e8cd38"},
+{"Type" : "TRANSFER","FromID" : "Test-1-6","ToID" : "Test-1-2","Value" : 65,"MiningFee" : 3,"UUID" : "d8460b24-e3f1-4672-80e2-d29fc4377850"}]
+}

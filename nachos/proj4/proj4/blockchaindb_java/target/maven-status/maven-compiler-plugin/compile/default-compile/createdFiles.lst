@@ -1,2 +1,8 @@
 iiis\systems\os\blockdb\Sender.class
+iiis\systems\os\blockdb\DatabaseEngine$1.class
 iiis\systems\os\blockdb\DatabaseEngine$Transaction.class
+iiis\systems\os\blockdb\DatabaseEngine$genNewBlockThread$1.class
+iiis\systems\os\blockdb\DatabaseEngine$Block.class
+iiis\systems\os\blockdb\Tester.class
+iiis\systems\os\blockdb\DatabaseEngine$genNewBlockThread.class
+iiis\systems\os\blockdb\DatabaseEngine$Server.class

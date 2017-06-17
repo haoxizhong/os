@@ -33,6 +33,6 @@ public class Hash {
     }
 
     public static boolean checkHash(String hash) {
-        return hash.substring(0, 5).equals("00000");
+        return hash.substring(0, 3).equals("000");
     }
 }

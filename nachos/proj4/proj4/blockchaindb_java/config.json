@@ -14,10 +14,5 @@
 		"port":"50053",
 		"dataDir":"/tmp/server03/"
 	},
-	"test":{
-		"ip":"127.0.0.1",
-		"port":"50051",
-		"dataDir":"/tmp/server04/"
-	},
 	"nservers":4
 }
