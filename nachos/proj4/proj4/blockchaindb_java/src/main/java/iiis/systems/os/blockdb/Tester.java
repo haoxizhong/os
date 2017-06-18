@@ -329,16 +329,20 @@ public class Tester {
 						break;
 				}
 				boolean result = Sender.sendTransfer(serverList.get(testId).address, serverList.get(testId).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
-				if (result ^ (b == 118)) {
+				if (result ^ (b < 100 || b == 118)) {
 					System.out.println("Failed on case " + b);
 					fail += 1;
 				}
 				else
 					success += 1;
+				if (b < 100 || b == 118) {
+					modifyValue(fromId, getValue(fromId) - value);
+					modifyValue(toId, getValue(toId) + value - fee);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Success: " + success + ", fail: " + fail);
+		System.out.println("Pass: " + success + ", fail: " + fail);
 	}
 }

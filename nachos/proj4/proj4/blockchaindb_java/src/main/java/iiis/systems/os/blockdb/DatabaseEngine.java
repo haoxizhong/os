@@ -222,9 +222,9 @@ public class DatabaseEngine {
             }
         }
 
-        int value = dfsCheckBlock(result.prevHash,depth+1);
+        int value = dfsCheckBlock(result.prevHash, depth + 1);
         if (value == -1) return -1;
-        if (value+1 != result.blockID) return -1;
+        if (value + 1 != result.blockID) return -1;
         return result.blockID;
     }
 
@@ -269,6 +269,7 @@ public class DatabaseEngine {
 
     boolean checkTransactionValid(Transaction transaction, boolean tag) {
         //System.out.println(transaction.toString());
+        if (transaction.uuid.length() != 32) return false;
         String fromId = transaction.fromId;
         String toId = transaction.toId;
         if (fromId.length() != 8) return false;
@@ -547,7 +548,7 @@ public class DatabaseEngine {
             } else a++;
         }
         //System.out.println("Cleaning size " + size);
-        if (pendingTransaction.size() >=MIN_BLOCK_SIZE && !genningBlock) {
+        if (pendingTransaction.size() >= MIN_BLOCK_SIZE && !genningBlock) {
             genNewBlock();
         }
     }
