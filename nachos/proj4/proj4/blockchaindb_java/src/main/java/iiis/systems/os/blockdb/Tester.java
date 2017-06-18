@@ -12,7 +12,8 @@ public class Tester {
 
     static LinkedList<DatabaseEngine.Server> serverList = new LinkedList<DatabaseEngine.Server>();
 
-    static void init(JSONObject obj) {
+    static int testId = 0;
+    static void init(JSONObject obj,String keyword) {
         Iterator<String> iterator = obj.keys();
         while (iterator.hasNext()) {
             String nowName = iterator.next();
@@ -21,6 +22,7 @@ public class Tester {
                 server.address = obj.getJSONObject(nowName).getString("ip");
                 server.port = obj.getJSONObject(nowName).getInt("port");
                 serverList.add(server);
+                if (nowName.equals(keyword)) testId = serverList.size()-1;
             }
         }
     }
@@ -54,6 +56,7 @@ public class Tester {
 
     static void test1() {
         //Test transfer
+        System.out.println("Testing basic transfer and get");
         money = new HashMap<>();
         int try_time = 3;
         for (int a = 0; a < try_time; a++) {
@@ -73,7 +76,7 @@ public class Tester {
                 int fee = abs(generator.nextInt()) % (value - 2) + 2;
                 try {
                     String uuid = UUID.randomUUID().toString();
-                    boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
+                    boolean result = Sender.sendTransfer(serverList.get(testId).address, serverList.get(testId).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
                     modifyValue(fromId, getValue(fromId) - value);
                     modifyValue(toId, getValue(toId) + value - fee);
                     System.out.println(a + " " + b + " " + result + " " + uuid);
@@ -84,6 +87,7 @@ public class Tester {
             }
         }
 
+        System.out.println("Type a int after the system becomes stable.");
         Scanner scanner = new Scanner(System.in);
         scanner.nextInt();
         //Test get
@@ -93,12 +97,14 @@ public class Tester {
         for (int a = 0; a < 10; a++) {
             String id = "Test-1-" + a;
             int storage = getValue(id);
-            int value = Sender.sendGet(serverList.get(0).address, serverList.get(0).port, id);
+            int value = Sender.sendGet(serverList.get(testId).address, serverList.get(testId).port, id);
             if (storage == value) hit++;
             else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
         }
-        System.out.println("Hit rate:" + 1.0 * hit / 10);
+        System.out.println("Test1 passed/total : " + hit + "/" + 10);
 
+        System.out.println("Please first kill the server for testing, and then restart to test recover");
+        System.out.println("Type a int after the system becomes stable.");
         scanner.nextInt();
         //Testing recovery from log
 
@@ -107,15 +113,16 @@ public class Tester {
         for (int a = 0; a < 10; a++) {
             String id = "Test-1-" + a;
             int storage = getValue(id);
-            int value = Sender.sendGet(serverList.get(0).address, serverList.get(0).port, id);
+            int value = Sender.sendGet(serverList.get(testId).address, serverList.get(testId).port, id);
             if (storage == value) hit++;
             else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
         }
-        System.out.println("Hit rate:" + 1.0 * hit / 10);
+        System.out.println("Test1 passed/total : " + hit + "/" + 10);
     }
 
     static void test2() {
         //Test transfer
+        System.out.println("Testing the information communication between servers");
         money = new HashMap<>();
         int try_time = 3;
         for (int a = 0; a < try_time; a++) {
@@ -135,7 +142,7 @@ public class Tester {
                 int fee = abs(generator.nextInt()) % (value - 2) + 2;
                 try {
                     String uuid = UUID.randomUUID().toString();
-                    boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
+                    boolean result = Sender.sendTransfer(serverList.get(testId).address, serverList.get(testId).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
                     modifyValue(fromId, getValue(fromId) - value);
                     modifyValue(toId, getValue(toId) + value - fee);
                     System.out.println(a + " " + b + " " + result + " " + uuid);
@@ -146,6 +153,7 @@ public class Tester {
             }
         }
 
+        System.out.println("Type a int after the system becomes stable.");
         Scanner scanner = new Scanner(System.in);
         scanner.nextInt();
         //Test server 2
@@ -155,12 +163,14 @@ public class Tester {
         for (int a = 0; a < 10; a++) {
             String id = "Test-2-" + a;
             int storage = getValue(id);
-            int value = Sender.sendGet(serverList.get(1).address, serverList.get(1).port, id);
+            int p = abs(generator.nextInt())%serverList.size();
+            int value = Sender.sendGet(serverList.get(p).address, serverList.get(p).port, id);
             if (storage == value) hit++;
             else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
         }
-        System.out.println("Hit rate:" + 1.0 * hit / 10);
+        System.out.println("Test1 passed/total : " + hit + "/" + 10);
 
+        System.out.println("Type a int after the system becomes stable.");
         scanner.nextInt();
         //Test server 3
 
@@ -169,15 +179,17 @@ public class Tester {
         for (int a = 0; a < 10; a++) {
             String id = "Test-2-" + a;
             int storage = getValue(id);
-            int value = Sender.sendGet(serverList.get(2).address, serverList.get(2).port, id);
+            int p = abs(generator.nextInt())%serverList.size();
+            int value = Sender.sendGet(serverList.get(p).address, serverList.get(p).port, id);
             if (storage == value) hit++;
             else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
         }
-        System.out.println("Hit rate:" + 1.0 * hit / 10);
+        System.out.println("Test1 passed/total : " + hit + "/" + 10);
     }
 
     static void test3() {
         //Test transfer
+        System.out.println("Testing server block maintain");
         money = new HashMap<>();
         LinkedList<DatabaseEngine.Transaction> uuidList = new LinkedList<>();
         for (int a = 0; a < DatabaseEngine.backStep + 3; a++) {
@@ -193,8 +205,8 @@ public class Tester {
                     b--;
                     continue;
                 }
-                int value = abs(generator.nextInt()) % (storage - 1) + 3;
-                int fee = abs(generator.nextInt()) % (value - 2) + 2;
+                int value = abs(generator.nextInt()) % (storage - 5) + 3;
+                int fee = abs(generator.nextInt()) % (value - 2) + 1;
                 try {
                     String uuid = UUID.randomUUID().toString();
                     boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
@@ -209,6 +221,7 @@ public class Tester {
             }
         }
 
+        System.out.println("Type a int after the system becomes stable.");
         Scanner scanner = new Scanner(System.in);
         scanner.nextInt();
         //Test verify
@@ -217,13 +230,13 @@ public class Tester {
         int p = 0;
         for (int a = 0; a < DatabaseEngine.backStep + 3; a++) {
             for (int b = 0; b < DatabaseEngine.MAX_BLOCK_SIZE; b++, p++) {
-                int result = Sender.sendVerify(serverList.get(0).address, serverList.get(0).port, uuidList.get(p));
+                int result = Sender.sendVerify(serverList.get(testId).address, serverList.get(testId).port, uuidList.get(p));
                 int expect;
                 if (a <= 2) expect = 2;
                 else expect = 1;
                 if (expect == result) hit++;
             }
         }
-        System.out.println("Hit rate:" + hit * 1.0 / uuidList.size());
+        System.out.println("Test1 passed/total : " + hit + "/" + uuidList.size());
     }
 }

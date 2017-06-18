@@ -53,7 +53,7 @@ public class BlockDatabaseServer {
 
         JSONObject config = Util.readJsonFile("config.json");
         if (debug) {
-            Tester.init(config);
+            Tester.init(config,keyword);
             Tester.test1();
             Tester.test2();
             Tester.test3();
