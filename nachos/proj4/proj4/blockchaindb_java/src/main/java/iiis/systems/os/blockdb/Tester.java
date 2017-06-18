@@ -69,8 +69,8 @@ public class Tester {
                     b--;
                     continue;
                 }
-                int value = abs(generator.nextInt()) % (storage - 1) + 3;
-                int fee = abs(generator.nextInt()) % (value - 2) + 2;
+                int value = abs(generator.nextInt()) % (storage - 1) + 2;
+                int fee = abs(generator.nextInt()) % (value - 1) + 1;
                 try {
                     String uuid = UUID.randomUUID().toString();
                     boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
@@ -131,8 +131,8 @@ public class Tester {
                     b--;
                     continue;
                 }
-                int value = abs(generator.nextInt()) % (storage - 1) + 3;
-                int fee = abs(generator.nextInt()) % (value - 2) + 2;
+                int value = abs(generator.nextInt()) % (storage - 1) + 2;
+                int fee = abs(generator.nextInt()) % (value - 1) + 1;
                 try {
                     String uuid = UUID.randomUUID().toString();
                     boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
@@ -193,8 +193,8 @@ public class Tester {
                     b--;
                     continue;
                 }
-                int value = abs(generator.nextInt()) % (storage - 1) + 3;
-                int fee = abs(generator.nextInt()) % (value - 2) + 2;
+                int value = abs(generator.nextInt()) % (storage - 1) + 2;
+                int fee = abs(generator.nextInt()) % (value - 1) + 1;
                 try {
                     String uuid = UUID.randomUUID().toString();
                     boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
@@ -226,4 +226,105 @@ public class Tester {
         }
         System.out.println("Hit rate:" + hit * 1.0 / uuidList.size());
     }
+	
+	static void test4(){
+		//Test invalid case
+		String saveuuid = "";
+		int fail = 0;
+		int success = 0;
+		for (int b = 0; b <= 120; a++) {
+			String fromId = "Test-4-" + genId(1);
+			String toId = "Test-4-" + genId(1);
+			if (fromId.equals(toId)) {
+				b--;
+				continue;
+			}
+			int storage = getValue(fromId);
+			if (storage <= 10) {
+				b--;
+				continue;
+			}
+			int value = abs(generator.nextInt()) % (storage - 1) + 2;
+			int fee = abs(generator.nextInt()) % (value - 1) + 1;
+			try {
+				String uuid = UUID.randomUUID().toString();
+				switch(b) {
+					case 100:
+						fromId = "";
+						break;
+					case 101:
+						fromId = null;
+						break;
+					case 102:
+						fromId = "Test-4-";
+						break;
+					case 103:
+						fromId = "Test-4-10";
+						break;
+					case 104:
+						toId = "";
+						break;
+					case 105:
+						toId = null;
+						break;
+					case 106:
+						toId = "Test-4-";
+						break;
+					case 107:
+						toId = "Test-4-10";
+						break;
+					case 108:
+						toId = fromId;
+						break;
+					case 109:
+						value = 0;
+						break;
+					case 110:
+						value = -1;
+						break;
+					case 111:
+						fee = value;
+						saveuuid = uuid;
+						break;
+					case 112:
+						fee = 0;
+						break;
+					case 113:
+						fee = -1;
+						break;
+					case 114:
+						uuid = "";
+						break;
+					case 115:
+						uuid = null;
+						break;
+					case 116:
+						uuid = uuid.substring(31);
+						break;
+					case 117:
+						uuid = uuid + "233";
+						break;
+					case 118:
+						uuid = saveuuid;
+						break;
+					case 119:
+						uuid = saveuuid;
+						break;
+					case 120:
+						value = storage + 1;
+						break;
+				}
+				boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
+				if (result ^ (b == 118)) {
+					System.out.println("Failed on case " + a);
+					fail += 1;
+				}
+				else
+					success += 1;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Success: " + success + ", fail: " + fail);
+	}
 }
