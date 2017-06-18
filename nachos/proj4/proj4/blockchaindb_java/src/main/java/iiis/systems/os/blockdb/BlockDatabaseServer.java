@@ -42,26 +42,33 @@ public class BlockDatabaseServer {
     }
 
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
-        JSONObject config = Util.readJsonFile("config.json");
         String keyword = "";
         boolean debug = false;
-        for (int a=0;a<args.length;a++) {
+        for (int a = 0; a < args.length; a++) {
             if (args[a].startsWith("--id=")) keyword = args[a].substring(5);
-            if (args[a].startsWith("--debug")) debug = true;
+            if (args[a].startsWith("--test")) debug = true;
         }
-        config = (JSONObject) config.get(keyword);
-        String address = config.getString("ip");
-        int port = Integer.parseInt(config.getString("port"));
-        String dataDir = config.getString("dataDir");
-        System.out.println(debug);
-        System.out.println(keyword);
-        if (debug && keyword.equals("test")) {
-            Sender sender = new Sender();
-            sender.work(address,port,dataDir);
+        //System.out.println(debug);
+        //System.out.println(keyword);
+
+        JSONObject config = Util.readJsonFile("config.json");
+        if (debug) {
+            Tester.init(config);
+            Tester.test1();
+            Tester.test2();
+            Tester.test3();
+            try {
+                while (true) ;
+            }
+            catch (Exception e) {
+            }
             return;
         }
+        JSONObject myConfig = config.getJSONObject(keyword);
+        String address = myConfig.getString("ip");
+        int port = myConfig.getInt("port");
 
-        DatabaseEngine.setup(keyword,dataDir);
+        DatabaseEngine.setup(config, keyword);
 
         final BlockDatabaseServer server = new BlockDatabaseServer();
         server.start(address, port);
@@ -82,7 +89,7 @@ public class BlockDatabaseServer {
 
         @Override
         public void transfer(Transaction request, StreamObserver<BooleanResponse> responseObserver) {
-            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue(),request.getMiningFee(),request.getUUID());
+            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(), request.getType(),true);
             BooleanResponse response = BooleanResponse.newBuilder().setSuccess(success).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -90,22 +97,22 @@ public class BlockDatabaseServer {
 
         @Override
         public void verify(Transaction request, StreamObserver<VerifyResponse> responseObserver) {
-            int value = dbEngine.verify(request.getUUID());
-            VerifyResponse response = VerifyResponse.newBuilder().setResultValue(value).build();
+            DatabaseEngine.Server value = dbEngine.verify(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(),request.getType());
+            VerifyResponse response = VerifyResponse.newBuilder().setResultValue(value.port).setBlockHash(value.address).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
 
         @Override
         public void getHeight(Null request, StreamObserver<GetHeightResponse> responseObserver) {
-            int value = dbEngine.getHeight();
-            GetHeightResponse response = GetHeightResponse.newBuilder().setHeight(value).build();
+            DatabaseEngine.Server value = dbEngine.getHeight();
+            GetHeightResponse response = GetHeightResponse.newBuilder().setHeight(value.port).setLeafHash(value.address).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
 
         @Override
-        public void getBlock(GetBlockRequest request,StreamObserver<JsonBlockString> responseObserver) {
+        public void getBlock(GetBlockRequest request, StreamObserver<JsonBlockString> responseObserver) {
             String value = dbEngine.getBlock(request.getBlockHash());
             JsonBlockString response = JsonBlockString.newBuilder().setJson(value).build();
             responseObserver.onNext(response);
@@ -113,7 +120,7 @@ public class BlockDatabaseServer {
         }
 
         @Override
-        public void pushBlock(JsonBlockString request,StreamObserver<Null> responseObserver) {
+        public void pushBlock(JsonBlockString request, StreamObserver<Null> responseObserver) {
             dbEngine.pushBlock(request.getJson());
             Null response = Null.newBuilder().build();
             responseObserver.onNext(response);
@@ -121,8 +128,8 @@ public class BlockDatabaseServer {
         }
 
         @Override
-        public void pushTransaction(Transaction request,StreamObserver<Null> responseObserver) {
-            dbEngine.pushTransaction(request.getFromID(), request.getToID(), request.getValue(),request.getMiningFee(),request.getUUID());
+        public void pushTransaction(Transaction request, StreamObserver<Null> responseObserver) {
+            dbEngine.pushTransaction(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(),request.getType());
             Null response = Null.newBuilder().build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
