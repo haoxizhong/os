@@ -228,11 +228,10 @@ public class Tester {
     }
 	
 	static void test4(){
-		//Test invalid case
-		String saveuuid = "";
+		//Format test
 		int fail = 0;
 		int success = 0;
-		for (int b = 0; b <= 120; a++) {
+		for (int b = 0; b <= 117; a++) {
 			String fromId = "Test-4-" + genId(1);
 			String toId = "Test-4-" + genId(1);
 			if (fromId.equals(toId)) {
@@ -284,7 +283,6 @@ public class Tester {
 						break;
 					case 111:
 						fee = value;
-						saveuuid = uuid;
 						break;
 					case 112:
 						fee = 0;
@@ -304,24 +302,15 @@ public class Tester {
 					case 117:
 						uuid = uuid + "233";
 						break;
-					case 118:
-						uuid = saveuuid;
-						break;
-					case 119:
-						uuid = saveuuid;
-						break;
-					case 120:
-						value = storage + 1;
-						break;
 				}
 				boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
-				if (result ^ (b < 100 || b == 118)) {
+				if (result ^ (b < 100)) {
 					System.out.println("Failed on case " + b);
 					fail += 1;
 				}
 				else
 					success += 1;
-				if (b < 100 || b == 118) {
+				if (b < 100) {
 					modifyValue(fromId, getValue(fromId) - value);
 					modifyValue(toId, getValue(toId) + value - fee);
 				}
