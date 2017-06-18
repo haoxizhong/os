@@ -22,8 +22,8 @@ public class Sender {
         GetResponse response;
         try {
             response = stub.get(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
             return -1;
         }
         return response.getValue();
@@ -45,8 +45,8 @@ public class Sender {
         VerifyResponse response;
         try {
             response = stub.verify(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
             return -1;
         }
 
@@ -69,8 +69,8 @@ public class Sender {
         BooleanResponse response;
         try {
             response = stub.transfer(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
             throw new Exception();
         }
 
@@ -86,8 +86,8 @@ public class Sender {
 
         try {
             response = stub.getBlock(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
             return "";
         }
 
@@ -103,8 +103,8 @@ public class Sender {
 
         try {
             response = stub.pushBlock(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
         }
     }
 
@@ -126,7 +126,7 @@ public class Sender {
         try {
             response = stub.pushTransaction(request);
             return true;
-        } catch (StatusRuntimeException e) {
+        } catch (Exception e) {
             //e.printStackTrace();
             return false;
         }
@@ -141,8 +141,8 @@ public class Sender {
 
         try {
             response = stub.getHeight(request);
-        } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            //e.printStackTrace();
             return new DatabaseEngine.Server("",0);
         }
 

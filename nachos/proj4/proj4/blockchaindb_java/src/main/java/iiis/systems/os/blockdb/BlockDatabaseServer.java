@@ -48,8 +48,8 @@ public class BlockDatabaseServer {
             if (args[a].startsWith("--id=")) keyword = args[a].substring(5);
             if (args[a].startsWith("--test")) debug = true;
         }
-        System.out.println(debug);
-        System.out.println(keyword);
+        //System.out.println(debug);
+        //System.out.println(keyword);
 
         JSONObject config = Util.readJsonFile("config.json");
         if (debug) {

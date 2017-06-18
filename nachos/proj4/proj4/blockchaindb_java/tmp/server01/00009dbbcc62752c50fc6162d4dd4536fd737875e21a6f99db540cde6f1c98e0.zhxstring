@@ -1,9 +1,0 @@
-{"Nonce" : "45741399",
-"BlockID" : 9,
-"PrevHash" : "000097536449b5ef2a494a73c1c79ee8721bdae6744f66d69655b1058d6af868",
-"MinerID" : "Server01",
-"Transactions" : [
-{"Type" : "TRANSFER","FromID" : "Test-3-7","ToID" : "Test-3-5","Value" : 626,"MiningFee" : 443,"UUID" : "5f6b8874-7d67-4389-b056-7d34acfd7a50"},
-{"Type" : "TRANSFER","FromID" : "Test-3-7","ToID" : "Test-3-5","Value" : 280,"MiningFee" : 268,"UUID" : "9266f4e5-dd44-4820-b15f-b418e413b480"},
-{"Type" : "TRANSFER","FromID" : "Test-3-5","ToID" : "Test-3-0","Value" : 111,"MiningFee" : 3,"UUID" : "f47ff362-a603-44bb-a7dc-4bcd1530aaaf"}]
-}

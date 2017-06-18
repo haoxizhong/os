@@ -22,8 +22,8 @@ public class DatabaseEngine {
     final static int defaultMoney = 1000;
     final static int backStep = 6;
 
-    final static int MAX_BLOCK_SIZE = 3;
-    final static int MIN_BLOCK_SIZE = 2;
+    final static int MAX_BLOCK_SIZE = 50;
+    final static int MIN_BLOCK_SIZE = 40;
     final int MAX_TRY_TIME = 5000000;
 
     private static DatabaseEngine instance = null;
@@ -73,7 +73,7 @@ public class DatabaseEngine {
         if (data.exists()) {
             File[] files = data.listFiles();
             for (File file : files) {
-                System.out.println(file.getAbsolutePath());
+                //System.out.println(file.getAbsolutePath());
                 try {
                     if (!file.isDirectory() && file.getAbsolutePath().endsWith(".zhxblock")) {
                         JSONObject obj = Util.readJsonFile(file.getAbsolutePath());
@@ -85,20 +85,20 @@ public class DatabaseEngine {
                         }
                         scanner.close();
                         block.blockString = block.blockString.substring(0, block.blockString.length() - 1);
-                        System.out.println(block.blockString);
+                        //System.out.println(block.blockString);
                         if (!Hash.checkHash(block.blockHash) || !Hash.getHashString(block.blockString).equals(block.blockHash))
                             throw new Exception();
                         blockList.put(block.blockHash, block);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         } else {
             try {
                 data.mkdirs();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
 
@@ -107,7 +107,7 @@ public class DatabaseEngine {
             Server server = serverList.get(a);
             Server response = Sender.sendGetHeight(server.address, server.port);
             String hash = response.address;
-            System.out.println(hash);
+            //System.out.println(hash);
             if (!hash.equals("")) {
                 if (!vote.containsKey(hash)) vote.put(hash, 0);
                 int value = vote.get(hash);
@@ -148,8 +148,8 @@ public class DatabaseEngine {
 
         dfsGenTransaction(currentBlock.blockHash, 0);
 
-        System.out.println(currentBlock.toString());
-        System.out.println(currentBlock.blockString);
+        //System.out.println(currentBlock.toString());
+        //System.out.println(currentBlock.blockString);
     }
 
     void dfsGenTransaction(String hash, int depth) {
@@ -184,7 +184,7 @@ public class DatabaseEngine {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
 
@@ -222,7 +222,7 @@ public class DatabaseEngine {
             writer.write(block.blockString);
             writer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -236,7 +236,7 @@ public class DatabaseEngine {
     }
 
     boolean checkTransactionValid(Transaction transaction, boolean tag) {
-        System.out.println(transaction.toString());
+        //System.out.println(transaction.toString());
         String fromId = transaction.fromId;
         String toId = transaction.toId;
         if (fromId.length()!=8) return false;
@@ -291,7 +291,7 @@ public class DatabaseEngine {
 
     class genNewBlockThread extends Thread {
         public void run() {
-            System.out.println("Begin to gen Block");
+            //System.out.println("Begin to gen Block");
             Block block = new Block();
             synchronized (databaseLock) {
                 Block nowBlock = blockList.get(currentBlock.blockHash);
@@ -304,7 +304,7 @@ public class DatabaseEngine {
                 block.transactions = new LinkedList<Transaction>();
                 HashMap<String, Integer> nowDelta = new HashMap<String, Integer>();
                 LinkedList<Transaction> failList = new LinkedList<>();
-                System.out.println(pendingTransaction.size() + " " + MAX_BLOCK_SIZE);
+                //System.out.println(pendingTransaction.size() + " " + MAX_BLOCK_SIZE);
                 for (int a = 0; a < pendingTransaction.size(); a++) {
                     Transaction transaction = pendingTransaction.get(a);
                     String fromId = transaction.fromId;
@@ -315,7 +315,7 @@ public class DatabaseEngine {
                     if (!nowDelta.containsKey(toId)) nowDelta.put(toId, 0);
                     int delta = nowDelta.get(fromId);
                     if (preV + delta - value < 0) {
-                        System.out.println(preV + " " + delta + " " + value);
+                        //System.out.println(preV + " " + delta + " " + value);
                         failList.add(transaction);
                         pendingTransaction.remove(a);
                         a--;
@@ -327,7 +327,7 @@ public class DatabaseEngine {
 
                     if (block.transactions.size() >= MAX_BLOCK_SIZE) break;
                 }
-                System.out.println(block.transactions.size());
+                //System.out.println(block.transactions.size());
 
                 for (int a = 0; a < failList.size(); a++)
                     pendingTransaction.add(failList.get(a));
@@ -347,7 +347,7 @@ public class DatabaseEngine {
             boolean success = true;
             while (!Hash.checkHash(nowhash)) {
                 try_time = try_time + 1;
-                if (try_time % 100000 == 0) System.out.println("Genning:" + try_time);
+                //if (try_time % 100000 == 0) System.out.println("Genning:" + try_time);
                 if (try_time > MAX_TRY_TIME) {
                     success = false;
                     break;
@@ -356,7 +356,7 @@ public class DatabaseEngine {
                 nowstr = block.toString();
                 nowhash = Hash.getHashString(nowstr);
             }
-            System.out.println("Genning result:" + success);
+            //System.out.println("Genning result:" + success);
             if (success) {
                 block.blockHash = nowhash;
                 block.blockString = nowstr;
@@ -396,7 +396,7 @@ public class DatabaseEngine {
             pendingTransaction.add(transaction);
             transaction.status = PENDING;
             transactionList.put(transaction.uuid, transaction);
-            System.out.println(pendingTransaction.size());
+            //System.out.println(pendingTransaction.size());
 
             if (pendingTransaction.size() >= MAX_BLOCK_SIZE && !genningBlock) {
                 genNewBlock();
@@ -490,7 +490,7 @@ public class DatabaseEngine {
                     currentBlock = block;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
@@ -506,7 +506,7 @@ public class DatabaseEngine {
                 size++;
             } else a++;
         }
-        System.out.println("Cleaning size " + size);
+        //System.out.println("Cleaning size " + size);
         if (pendingTransaction.size() >= MAX_BLOCK_SIZE && !genningBlock) {
             genNewBlock();
         }
@@ -572,12 +572,12 @@ public class DatabaseEngine {
     }
 
     public int get(String userId) {
-        System.out.println("Receive a get");
+        //System.out.println("Receive a get");
         return getValueById(userId);
     }
 
     public boolean transfer(String fromId, String toId, int value, int fee, String uuid, iiis.systems.os.blockchaindb.Transaction.Types type,boolean broadcast) {
-        System.out.println("Receive a trasanction");
+        //System.out.println("Receive a trasanction");
         if (type != iiis.systems.os.blockchaindb.Transaction.Types.TRANSFER) return false;
         Transaction transaction = new Transaction(fromId, toId, value, fee, uuid);
         if (checkTransactionValid(transaction, false)) {
@@ -632,15 +632,15 @@ public class DatabaseEngine {
 
     public void pushBlock(String block) {
         try {
-            System.out.println("Receive block");
-            System.out.println(block);
+            //System.out.println("Receive block");
+            //System.out.println(block);
             JSONObject obj = new JSONObject(block);
             if (checkBlock(obj, block)) {
-                System.out.println("Adding block");
+                //System.out.println("Adding block");
                 addNewBlock(obj, block);
             }
         } catch (Exception e) {
-            e.printStackTrace();//#TODO
+            //e.printStackTrace();//#TODO
         }
     }
 
