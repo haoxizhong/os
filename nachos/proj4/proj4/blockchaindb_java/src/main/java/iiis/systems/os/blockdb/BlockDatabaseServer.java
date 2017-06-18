@@ -54,7 +54,8 @@ public class BlockDatabaseServer {
         JSONObject config = Util.readJsonFile("config.json");
         if (debug) {
             Tester.init(config);
-            Tester.test1();
+            //Tester.test1();
+            Tester.test2();
             try {
                 while (true) ;
             }
@@ -103,8 +104,8 @@ public class BlockDatabaseServer {
 
         @Override
         public void getHeight(Null request, StreamObserver<GetHeightResponse> responseObserver) {
-            int value = dbEngine.getHeight();
-            GetHeightResponse response = GetHeightResponse.newBuilder().setHeight(value).build();
+            DatabaseEngine.Server value = dbEngine.getHeight();
+            GetHeightResponse response = GetHeightResponse.newBuilder().setHeight(value.port).setLeafHash(value.address).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }

@@ -112,4 +112,66 @@ public class Tester {
         }
         System.out.println("Hit rate:" + 1.0 * hit / 10);
     }
+
+    static void test2() {
+        //Test transfer
+        money = new HashMap<>();
+        int try_time = 3;
+        for (int a = 0; a < try_time; a++) {
+            for (int b = 0; b < DatabaseEngine.MAX_BLOCK_SIZE; b++) {
+                String fromId = "Test-1-" + genId(1);
+                String toId = "Test-1-" + genId(1);
+                if (fromId.equals(toId)) {
+                    b--;
+                    continue;
+                }
+                int storage = getValue(fromId);
+                if (storage <= 10) {
+                    b--;
+                    continue;
+                }
+                int value = abs(generator.nextInt()) % (storage - 1) + 3;
+                int fee = abs(generator.nextInt()) % (value - 2) + 2;
+                try {
+                    String uuid = UUID.randomUUID().toString();
+                    boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
+                    modifyValue(fromId,getValue(fromId)-value);
+                    modifyValue(toId,getValue(toId)+value-fee);
+                    System.out.println(a + " " + b + " " + result + " " + uuid);
+                    //Thread.sleep(5000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextInt();
+        //Test server 2
+
+        int query_time = 10;
+        int hit = 0;
+        for (int a = 0; a < 10; a++) {
+            String id = "Test-1-" + a;
+            int storage = getValue(id);
+            int value = Sender.sendGet(serverList.get(1).address, serverList.get(1).port, id);
+            if (storage == value) hit++;
+            else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
+        }
+        System.out.println("Hit rate:" + 1.0 * hit / 10);
+
+        scanner.nextInt();
+        //Test server 3
+
+        query_time = 10;
+        hit = 0;
+        for (int a = 0; a < 10; a++) {
+            String id = "Test-1-" + a;
+            int storage = getValue(id);
+            int value = Sender.sendGet(serverList.get(2).address, serverList.get(2).port, id);
+            if (storage == value) hit++;
+            else System.out.println("Failed:" + a + " expected " + storage + " get " + value);
+        }
+        System.out.println("Hit rate:" + 1.0 * hit / 10);
+    }
 }
