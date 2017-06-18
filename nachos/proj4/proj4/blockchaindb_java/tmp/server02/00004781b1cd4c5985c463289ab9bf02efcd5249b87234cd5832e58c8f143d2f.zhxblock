@@ -1,0 +1,11 @@
+{"Nonce" : "86299159",
+"BlockID" : 14,
+"PrevHash" : "000035bd0d1634e14d15e3779deadd1c96f13a0719be9acb63131d3b37d2404b",
+"blockHash" : "00004781b1cd4c5985c463289ab9bf02efcd5249b87234cd5832e58c8f143d2f",
+"MinerID" : "Server03",
+"height" : "14",
+"Transactions" : [
+{"Type" : "TRANSFER","FromID" : "Test-3-3","ToID" : "Test-3-5","Value" : 312,"MiningFee" : 295,"UUID" : "48ed63e6-048e-41b6-88f9-eef4b7b6e9b2"},
+{"Type" : "TRANSFER","FromID" : "Test-3-4","ToID" : "Test-3-2","Value" : 8,"MiningFee" : 4,"UUID" : "c0ea0345-f643-45fa-898d-0c26244afc1e"},
+{"Type" : "TRANSFER","FromID" : "Test-3-8","ToID" : "Test-3-4","Value" : 128,"MiningFee" : 44,"UUID" : "7db2aeba-6a96-4feb-834d-eff9aac9231e"}]
+}

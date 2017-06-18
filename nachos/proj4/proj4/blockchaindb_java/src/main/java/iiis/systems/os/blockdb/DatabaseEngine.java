@@ -1,5 +1,6 @@
 package iiis.systems.os.blockdb;
 
+import iiis.systems.os.blockchaindb.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ public class DatabaseEngine {
     final static int UNRECOGNIZED = -1;
 
     final static int defaultMoney = 1000;
-    final int backStep = 6;
+    final static int backStep = 6;
 
     final static int MAX_BLOCK_SIZE = 3;
     final static int MIN_BLOCK_SIZE = 2;
@@ -238,6 +239,8 @@ public class DatabaseEngine {
         System.out.println(transaction.toString());
         String fromId = transaction.fromId;
         String toId = transaction.toId;
+        if (fromId.length()!=8) return false;
+        if (toId.length()!=8) return false;
         if (fromId.equals(toId)) return false;
         int fromV = getValueById(fromId);
         int value = transaction.value;
@@ -410,6 +413,8 @@ public class DatabaseEngine {
         if (tag && !blockList.containsKey(obj.getString("PrevHash"))) return false;
         if (!keySet.contains("Transactions")) return false;
         if (!keySet.contains("MinerID")) return false;
+        String miner = obj.getString("MinerID");
+        if (miner.length()!=8 || !miner.startsWith("Server")) return false;
         String hashString = Hash.getHashString(jsonStr);
         if (!Hash.checkHash(hashString)) return false;
 
@@ -571,8 +576,9 @@ public class DatabaseEngine {
         return getValueById(userId);
     }
 
-    public boolean transfer(String fromId, String toId, int value, int fee, String uuid, boolean broadcast) {
+    public boolean transfer(String fromId, String toId, int value, int fee, String uuid, iiis.systems.os.blockchaindb.Transaction.Types type,boolean broadcast) {
         System.out.println("Receive a trasanction");
+        if (type != iiis.systems.os.blockchaindb.Transaction.Types.TRANSFER) return false;
         Transaction transaction = new Transaction(fromId, toId, value, fee, uuid);
         if (checkTransactionValid(transaction, false)) {
             addNewTransaction(transaction);
@@ -602,7 +608,8 @@ public class DatabaseEngine {
         } else return false;
     }
 
-    public Server verify(String fromId, String toId, int value, int fee, String uuid) {
+    public Server verify(String fromId, String toId, int value, int fee, String uuid, iiis.systems.os.blockchaindb.Transaction.Types type) {
+        if (type!= iiis.systems.os.blockchaindb.Transaction.Types.TRANSFER) return new Server("",FAILED);
         if (transactionList.containsKey(uuid)) {
             Transaction transaction = transactionList.get(uuid);
             if (!transaction.fromId.equals(fromId)) return new Server("", FAILED);
@@ -637,9 +644,9 @@ public class DatabaseEngine {
         }
     }
 
-    public void pushTransaction(String fromId, String toId, int value, int fee, String uuid) {
+    public void pushTransaction(String fromId, String toId, int value, int fee, String uuid, iiis.systems.os.blockchaindb.Transaction.Types type) {
         if (transactionList.containsKey(uuid)) return;
-        transfer(fromId, toId, value, fee, uuid, false);
+        transfer(fromId, toId, value, fee, uuid, type, false);
     }
 
     static class Transaction {

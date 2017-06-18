@@ -46,7 +46,7 @@ public class BlockDatabaseServer {
         boolean debug = false;
         for (int a = 0; a < args.length; a++) {
             if (args[a].startsWith("--id=")) keyword = args[a].substring(5);
-            if (args[a].startsWith("--debug")) debug = true;
+            if (args[a].startsWith("--test")) debug = true;
         }
         System.out.println(debug);
         System.out.println(keyword);
@@ -54,8 +54,9 @@ public class BlockDatabaseServer {
         JSONObject config = Util.readJsonFile("config.json");
         if (debug) {
             Tester.init(config);
-            //Tester.test1();
+            Tester.test1();
             Tester.test2();
+            Tester.test3();
             try {
                 while (true) ;
             }
@@ -88,7 +89,7 @@ public class BlockDatabaseServer {
 
         @Override
         public void transfer(Transaction request, StreamObserver<BooleanResponse> responseObserver) {
-            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(), true);
+            boolean success = dbEngine.transfer(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(), request.getType(),true);
             BooleanResponse response = BooleanResponse.newBuilder().setSuccess(success).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -96,7 +97,7 @@ public class BlockDatabaseServer {
 
         @Override
         public void verify(Transaction request, StreamObserver<VerifyResponse> responseObserver) {
-            DatabaseEngine.Server value = dbEngine.verify(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID());
+            DatabaseEngine.Server value = dbEngine.verify(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(),request.getType());
             VerifyResponse response = VerifyResponse.newBuilder().setResultValue(value.port).setBlockHash(value.address).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -128,7 +129,7 @@ public class BlockDatabaseServer {
 
         @Override
         public void pushTransaction(Transaction request, StreamObserver<Null> responseObserver) {
-            dbEngine.pushTransaction(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID());
+            dbEngine.pushTransaction(request.getFromID(), request.getToID(), request.getValue(), request.getMiningFee(), request.getUUID(),request.getType());
             Null response = Null.newBuilder().build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();

@@ -29,6 +29,30 @@ public class Sender {
         return response.getValue();
     }
 
+    public static int sendVerify(String ip,int port, DatabaseEngine.Transaction transaction) {
+        Channel channel = ManagedChannelBuilder.forAddress(ip, port).usePlaintext(true).build();
+        BlockChainMinerGrpc.BlockChainMinerBlockingStub stub = BlockChainMinerGrpc.newBlockingStub(channel);
+
+        Transaction request = Transaction.newBuilder()
+                .setType(Transaction.Types.TRANSFER)
+                .setFromID(transaction.fromId)
+                .setToID(transaction.toId)
+                .setValue(transaction.value)
+                .setMiningFee(transaction.miningFee)
+                .setUUID(transaction.uuid)
+                .setType(Transaction.Types.TRANSFER)
+                .build();
+        VerifyResponse response;
+        try {
+            response = stub.verify(request);
+        } catch (StatusRuntimeException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        return response.getResultValue();
+    }
+
     public static boolean sendTransfer(String ip, int port, DatabaseEngine.Transaction transaction) throws Exception {
         Channel channel = ManagedChannelBuilder.forAddress(ip, port).usePlaintext(true).build();
         BlockChainMinerGrpc.BlockChainMinerBlockingStub stub = BlockChainMinerGrpc.newBlockingStub(channel);
@@ -40,6 +64,7 @@ public class Sender {
                 .setValue(transaction.value)
                 .setMiningFee(transaction.miningFee)
                 .setUUID(transaction.uuid)
+                .setType(Transaction.Types.TRANSFER)
                 .build();
         BooleanResponse response;
         try {
@@ -94,6 +119,7 @@ public class Sender {
                 .setValue(transaction.value)
                 .setMiningFee(transaction.miningFee)
                 .setUUID(transaction.uuid)
+                .setType(Transaction.Types.TRANSFER)
                 .build();
         Null response;
 
