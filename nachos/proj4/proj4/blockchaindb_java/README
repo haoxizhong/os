@@ -1,4 +1,3 @@
-如果要运行测试，使用 ./start.sh --test --test_id=num1 --id=num2 运行。
-其中num1可以为1、2、3、4，分别代表四组测试用例。
-num2为指定需要进行测试的服务器。
+如果要运行测试，使用 ./start.sh --test --id=num 运行。
+num为指定需要进行测试的服务器。
 如果普通运行服务器 ./start.sh --id=num 即可。
