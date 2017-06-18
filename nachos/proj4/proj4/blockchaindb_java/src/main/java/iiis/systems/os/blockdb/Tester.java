@@ -242,10 +242,11 @@ public class Tester {
 	
 	static void test4(){
 		//Test invalid case
+        money = new HashMap<>();
 		String saveuuid = "";
 		int fail = 0;
 		int success = 0;
-		for (int b = 0; b <= 120; a++) {
+		for (int b = 0; b <= 120; b++) {
 			String fromId = "Test-4-" + genId(1);
 			String toId = "Test-4-" + genId(1);
 			if (fromId.equals(toId)) {
@@ -327,7 +328,7 @@ public class Tester {
 						value = storage + 1;
 						break;
 				}
-				boolean result = Sender.sendTransfer(serverList.get(0).address, serverList.get(0).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
+				boolean result = Sender.sendTransfer(serverList.get(testId).address, serverList.get(testId).port, new DatabaseEngine.Transaction(fromId, toId, value, fee, uuid));
 				if (result ^ (b == 118)) {
 					System.out.println("Failed on case " + b);
 					fail += 1;

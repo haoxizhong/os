@@ -156,6 +156,8 @@ public class DatabaseEngine {
 
     void dfsGenTransaction(String hash, int depth) {
         Block block = blockList.get(hash);
+        System.out.println(hash);
+        System.out.println(block);
         if (block.height == 0) return;
         dfsGenTransaction(block.prevHash, depth + 1);
         for (int a = 0; a < block.transactions.size(); a++) {
